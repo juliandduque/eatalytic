@@ -1,60 +1,56 @@
-var API = "https://api.clarifai.com/v2/models/bd367be194cf45149e75f01d59f77ba7/outputs";
-var APIKEY = "b6130538acd741cb8402552ba042654f";
+var APIKEY = 'de003cd15db240a7ab4e0943f7dacdd6';
 
 
-document.addEventListener('DOMContentLoaded', function () {
-    var checkPageButton = document.getElementById('checkPage');
+function setChildTextNode(elementId, text) {
+  document.getElementById(elementId).innerText = text;
+}
 
-    checkPageButton.addEventListener('click', function () {
+function log(d) {
+    try {
+        alert(JSON.stringify(d, null, 2));
+    } catch (e) {
+        alert(d);
+    }
+}
 
-        chrome.tabs.captureVisibleTab(null, {}, function (image)
+function displayIngredients(d)
+{
+    try
+    {
+        var ingredients = d.outputs[0].data.concepts;
+        var filteredIngredients = [];
+        for (i = 0; i < ingredients.length; i++)
         {
+            if (ingredients[i].value > 0.75) filteredIngredients.push(ingredients[i].name);
+        }
+        setChildTextNode('languageSpan', filteredIngredients);
+    } catch (e) {
+        alert(e.message);
+    }
+}
 
-            chrome.extension.getBackgroundPage().console.log(image);
+document.addEventListener('DOMContentLoaded', function() {
 
-            // Setup the JSON payload to send to the API
-            /*var jsonPayload =
-                {
-                    "inputs":
-                    [
-                        "data": 
-                        {
-                            "image":image
-                        }
-                    ]
-                };
 
-            Console.log(jsonPayload);
+    setChildTextNode('languageSpan', "Finding your recipe...");
 
-            //jsonPayload = JSON.stringify(jsonPayload);
-           
-            // Setup the HMLHttpRequest
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", API, true);
-            xhr.setRequestHeader("Content-Authorization", "application/json");
-            xhr.setRequestHeader("Content-type", APIKEY);
+    chrome.tabs.captureVisibleTab(null, null,function (image)
+    {
+        try
+        {
+            var app = new Clarifai.App({
+                apiKey: APIKEY
+            });
+            image = image.replace("data:image/jpeg;base64,", "");
+            image.replace(" ", "+");
 
-            // Attempt to call clarifai
-            try
-            {
-                // Send the XMLHttpRequest
-                //xhr.send(jsonPayload);
-
-                // Parse the JSON returned from the request
-                var jsonObject = JSON.parse(xhr.responseText);
-
-                // If the returned JSON contains an error then set the HTML login result message
-                if (jsonObject.error || !jsonObject.success) {
-                    document.getElementById("result").innerHTML = jsonObject.error;
-                    return false;
-                }
-                
-            } catch (e)
-            {
-                // If there is an error parsing the JSON, attempt to set the HTML login result message
-                document.getElementById("result").innerHTML = e.message;
-            }
-        });
-            */
-    }, false);
-}, false);
+            app.models.predict(Clarifai.FOOD_MODEL, image)
+            .then(displayIngredients)
+            .catch(log);
+        }
+        catch (e)
+        {
+            log(e);
+        }
+    });
+});
