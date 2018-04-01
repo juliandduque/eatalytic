@@ -1,5 +1,36 @@
 var APIKEY = 'de003cd15db240a7ab4e0943f7dacdd6';
+var FOODAPIKEY = '03faadccf572f75070b43d8b34c17487';
+var FOODAPI = 'http://food2fork.com/api/search';
 
+
+function queryFoodApi(ingredients)
+{
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", FOODAPI + "?" + "key=" + FOODAPIKEY + "&sort=r&q=" + ingredients.slice(0, 3), false);
+
+    setChildTextNode('languageSpan', '');
+    setChildTextNode('ingreidentsTitle', "Ingredients: ");
+    setChildTextNode('ingreidentsText', "\n" + ingredients);
+        
+    try
+    {
+        xhr.send(null);
+
+        var jsonObject = JSON.parse(xhr.responseText);
+        
+        var RecipeURL = jsonObject.recipes[0].f2f_url;
+        setChildTextNode('recipeTitle', "\n\nRecipe:");
+        setChildTextNode('recipeText', "\n" + RecipeURL);
+        //chrome.tabs.create({ active: true, url: RecipeURL });
+
+    }
+    catch (e)
+    {
+        setChildTextNode('recipeText', '\n\nCould not find a recipe for this particular image');
+        //alert(e.message);
+    }
+
+}
 
 function setChildTextNode(elementId, text) {
   document.getElementById(elementId).innerText = text;
@@ -21,9 +52,10 @@ function displayIngredients(d)
         var filteredIngredients = [];
         for (i = 0; i < ingredients.length; i++)
         {
-            if (ingredients[i].value > 0.75) filteredIngredients.push(ingredients[i].name);
+            if (ingredients[i].value > 0.85) filteredIngredients.push(ingredients[i].name);
         }
-        setChildTextNode('languageSpan', filteredIngredients);
+        queryFoodApi(filteredIngredients);
+
     } catch (e) {
         alert(e.message);
     }
