@@ -6,37 +6,32 @@ var STDLIBAPI = 'https://juliandduque.lib.id/eatMessages@dev/';
 
 function sendText(phone, ingredients, recipeName)
 {
-    alert(recipeName);
-    xhr.open("POST", STDLIBAPI + "?"
-    var xhr = new XMLHttpRequest(); + "recipient=" + phone + "&body=Recipe Name: " + recipeName + " Ingredients:" + ingredients, false);
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", FOODAPI + "?" + "recipient=" + phone + "&body=Recipe Name: " + recipeName + " Ingredients:" + ingredients, false);
     xhr.setRequestHeader("Content-Type", "application/json");
 
-    try
-    {
+    try {
         xhr.send(null);
     }
-    catch (e)
-    {
+    catch (e) {
         alert(e.message);
     }
 }
 
 
-function queryFoodApi(ingredients)
-{
+function queryFoodApi(ingredients) {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", FOODAPI + "?" + "key=" + FOODAPIKEY + "&sort=r&q=" + ingredients.slice(0, 3), false);
 
     setChildTextNode('languageSpan', '');
     setChildTextNode('ingreidentsTitle', "Ingredients: ");
     setChildTextNode('ingreidentsText', "\n" + ingredients);
-        
-    try
-    {
+
+    try {
         xhr.send(null);
 
         var jsonObject = JSON.parse(xhr.responseText);
-        
+
         var RecipeURL = jsonObject.recipes[0].f2f_url;
         setChildTextNode('recipeTitle', "\n\nRecipe:");
         setChildTextNode('recipeText', "\n" + RecipeURL);
@@ -45,8 +40,7 @@ function queryFoodApi(ingredients)
         //chrome.tabs.create({ active: true, url: RecipeURL });
 
     }
-    catch (e)
-    {
+    catch (e) {
         setChildTextNode('recipeText', '\n\nCould not find a recipe for this particular image');
         alert(e.message);
     }
@@ -54,7 +48,7 @@ function queryFoodApi(ingredients)
 }
 
 function setChildTextNode(elementId, text) {
-  document.getElementById(elementId).innerText = text;
+    document.getElementById(elementId).innerText = text;
 }
 
 function log(d) {
@@ -65,14 +59,11 @@ function log(d) {
     }
 }
 
-function displayIngredients(d)
-{
-    try
-    {
+function displayIngredients(d) {
+    try {
         var ingredients = d.outputs[0].data.concepts;
         var filteredIngredients = [];
-        for (i = 0; i < ingredients.length; i++)
-        {
+        for (i = 0; i < ingredients.length; i++) {
             if (ingredients[i].value > 0.85) filteredIngredients.push(ingredients[i].name);
         }
         queryFoodApi(filteredIngredients);
@@ -82,15 +73,13 @@ function displayIngredients(d)
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
 
 
     setChildTextNode('languageSpan', "Finding your recipe...");
 
-    chrome.tabs.captureVisibleTab(null, null,function (image)
-    {
-        try
-        {
+    chrome.tabs.captureVisibleTab(null, null, function (image) {
+        try {
             var app = new Clarifai.App({
                 apiKey: APIKEY
             });
@@ -98,11 +87,10 @@ document.addEventListener('DOMContentLoaded', function() {
             image.replace(" ", "+");
 
             app.models.predict(Clarifai.FOOD_MODEL, image)
-            .then(displayIngredients)
-            .catch(log);
+                .then(displayIngredients)
+                .catch(log);
         }
-        catch (e)
-        {
+        catch (e) {
             log(e);
         }
     });
