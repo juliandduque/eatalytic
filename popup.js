@@ -1,6 +1,25 @@
-var APIKEY = 'de003cd15db240a7ab4e0943f7dacdd6';
+//var APIKEY = 'de003cd15db240a7ab4e0943f7dacdd6';
+var APIKEY = 'b9ed14166e594539a9265dc27a63ab2a';
 var FOODAPIKEY = '03faadccf572f75070b43d8b34c17487';
 var FOODAPI = 'http://food2fork.com/api/search';
+var STDLIBAPI = 'https://juliandduque.lib.id/eatMessages@dev/';
+
+function sendText(phone, ingredients, recipeName)
+{
+    alert(recipeName);
+    xhr.open("POST", STDLIBAPI + "?"
+    var xhr = new XMLHttpRequest(); + "recipient=" + phone + "&body=Recipe Name: " + recipeName + " Ingredients:" + ingredients, false);
+    xhr.setRequestHeader("Content-Type", "application/json");
+
+    try
+    {
+        xhr.send(null);
+    }
+    catch (e)
+    {
+        alert(e.message);
+    }
+}
 
 
 function queryFoodApi(ingredients)
@@ -21,13 +40,15 @@ function queryFoodApi(ingredients)
         var RecipeURL = jsonObject.recipes[0].f2f_url;
         setChildTextNode('recipeTitle', "\n\nRecipe:");
         setChildTextNode('recipeText', "\n" + RecipeURL);
+
+        sendText("17863188066", ingredients, jsonObject.recipes[0].title);
         //chrome.tabs.create({ active: true, url: RecipeURL });
 
     }
     catch (e)
     {
         setChildTextNode('recipeText', '\n\nCould not find a recipe for this particular image');
-        //alert(e.message);
+        alert(e.message);
     }
 
 }
